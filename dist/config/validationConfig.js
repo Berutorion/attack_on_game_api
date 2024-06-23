@@ -58,7 +58,7 @@ const validateFutureDate = (value, { path }) => {
   }
   throw new Error(`${path}時間格式不對哦！必須是未來的日期`);
 };
-const validateObjectIds = (value) => {
+const isValidObjectId = (value) => {
   return mongoose_1.Types.ObjectId.isValid(value);
 };
 exports.validationConfig = {
@@ -66,7 +66,7 @@ exports.validationConfig = {
     storeId: [
       (0, express_validator_1.body)('storeId')
         .optional()
-        .custom(validateObjectIds)
+        .custom(isValidObjectId)
         .withMessage('商店ID格式不對哦！'),
     ],
     title: [
@@ -229,12 +229,12 @@ exports.validationConfig = {
   param: {
     id: [
       (0, express_validator_1.param)('id')
-        .custom(validateObjectIds)
+        .custom(isValidObjectId)
         .withMessage('請提供有效的 ObjectId 格式'),
     ],
     storeId: [
       (0, express_validator_1.param)('storeId')
-        .custom(validateObjectIds)
+        .custom(isValidObjectId)
         .withMessage('請提供有效的 ObjectId 格式'),
     ],
   },

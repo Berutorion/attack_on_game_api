@@ -15,10 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventRepository = void 0;
 const EventModel_1 = __importDefault(require("@/models/EventModel"));
 const EventQuery_1 = require("@/queries/EventQuery");
+const mongoose_1 = require("mongoose");
 const CustomResponseType_1 = require("@/enums/CustomResponseType");
 const CustomError_1 = require("@/errors/CustomError");
 const EventResponseType_1 = require("@/types/EventResponseType");
 const OtherResponseType_1 = require("@/types/OtherResponseType");
+const EventRequest_1 = require("@/enums/EventRequest");
 const lodash_1 = __importDefault(require("lodash"));
 class EventRepository {
     findById(id) {
@@ -49,6 +51,12 @@ class EventRepository {
             }
         });
     }
+    getEventsByAprilStoreId(storeId_1) {
+        return __awaiter(this, arguments, void 0, function* (storeId, query = {}) {
+            const eventData = yield EventModel_1.default.find(Object.assign({ storeId: new mongoose_1.Types.ObjectId(storeId.toString()) }, query));
+            return eventData || [];
+        });
+    }
     findAll(queryParams) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -59,7 +67,7 @@ class EventRepository {
                     regStatus: registrationStatus,
                 });
                 const query = eventQuery.buildEventQuery();
-                const events = yield this._getEventsData(query, skip, limit, sortBy, sortOrder);
+                const events = yield this.getEventsData(query, skip, limit, sortBy, sortOrder);
                 return events;
             }
             catch (error) {
@@ -140,7 +148,7 @@ class EventRepository {
                     regStatus: registrationStatus,
                 });
                 const query = eventQuery.buildEventQuery();
-                const events = yield this._getEventsData(query, skip, limit, sortBy, sortOrder);
+                const events = yield this.getEventsData(query, skip, limit, sortBy, sortOrder);
                 return events;
             }
             catch (error) {
@@ -148,8 +156,8 @@ class EventRepository {
             }
         });
     }
-    _getEventsData(eventQuery, skip, limit, sortBy, sortOrder) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getEventsData(eventQuery_1) {
+        return __awaiter(this, arguments, void 0, function* (eventQuery, skip = EventRequest_1.DefaultQuery.SKIP, limit = EventRequest_1.DefaultQuery.LIMIT, sortBy = EventRequest_1.DefaultQuery.SORT_BY, sortOrder = EventRequest_1.DefaultQuery.SORT_ORDER) {
             try {
                 const sortOptions = { [sortBy]: sortOrder };
                 const eventData = yield EventModel_1.default.find(eventQuery)
@@ -166,4 +174,4 @@ class EventRepository {
     }
 }
 exports.EventRepository = EventRepository;
-//# sourceMappingURL=eventRepository.js.map
+//# sourceMappingURL=EventRepository.js.map

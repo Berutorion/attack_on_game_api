@@ -8,7 +8,7 @@ export class EventValidator {
     return Object.values(validationConfig.query).flat();
   }
 
-  static validateObjectIds(parameters: string) {
+  static validateEventParam(parameters: string) {
     return validationConfig.param[parameters];
   }
 }

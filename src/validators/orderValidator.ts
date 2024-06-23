@@ -8,7 +8,7 @@ export class OrderValidator {
     return Object.values(validationConfig.query).flat();
   }
 
-  static validateObjectIds(parameters: string) {
-    return validationConfig.param[parameters];
+  static validateOrdertId() {
+    return Object.values(validationConfig.param).flat();
   }
 }

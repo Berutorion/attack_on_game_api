@@ -12,10 +12,10 @@ function genDataChain(order) {
     if (!MerchantID || !Version || !RespondType || !ReturnUrl)
         throw new Error('Missing required environment variables');
     /**
-     * &NotifyURL=${encodeURIComponent(
-            NotifyUrl,
-        )}
-     */
+       * &NotifyURL=${encodeURIComponent(
+              NotifyUrl,
+          )}
+       */
     return `MerchantID=${MerchantID}&TimeStamp=${order.TimeStamp}&Version=${Version}&RespondType=${RespondType}&MerchantOrderNo=${order.MerchantOrderNo}&Amt=${order.Amt}&ReturnURL=${encodeURIComponent(ReturnUrl)}&ItemDesc=${encodeURIComponent(order.ItemDesc)}`;
 }
 exports.genDataChain = genDataChain;

@@ -9,8 +9,8 @@ class OrderValidator {
     static validateOrderQuery() {
         return Object.values(orderConfig_1.validationConfig.query).flat();
     }
-    static validateObjectIds(parameters) {
-        return orderConfig_1.validationConfig.param[parameters];
+    static validateOrdertId() {
+        return Object.values(orderConfig_1.validationConfig.param).flat();
     }
 }
 exports.OrderValidator = OrderValidator;

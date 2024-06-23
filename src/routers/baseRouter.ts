@@ -34,7 +34,6 @@ export abstract class BaseRouter {
       }
     };
   }
-
   private mapStatusCode(status: CustomResponseType): number {
     switch (status) {
       case CustomResponseType.SUCCESS:

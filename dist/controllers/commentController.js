@@ -39,9 +39,7 @@ const getComments = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!eventExist) {
             return res.status(404).send({ message: 'Event not found!' });
         }
-        res
-            .status(200)
-            .send({
+        res.status(200).send({
             success: true,
             message: '留言板資訊取得成功',
             contents: contents,

@@ -28,26 +28,26 @@ class EventRouter extends BaseRouter {
     this.router.get(
       '/store/:storeId/',
       EventValidator.validateEventQuery(),
-      EventValidator.validateObjectIds('storeId'),
+      EventValidator.validateEventParam('storeId'),
       handleValidationErrors,
       this.handleRequest(this.controller.getEventsByStore),
     );
     this.router.get(
       '/:id',
-      EventValidator.validateObjectIds('id'),
+      EventValidator.validateEventParam('id'),
       handleValidationErrors,
       this.handleRequest(this.controller.getById),
     );
     this.router.get(
       '/:id/summary',
-      EventValidator.validateObjectIds('id'),
+      EventValidator.validateEventParam('id'),
       handleValidationErrors,
       this.handleRequest(this.controller.getEventSummary),
     );
     /* */
     this.router.patch(
       '/:id',
-      EventValidator.validateObjectIds('id'),
+      EventValidator.validateEventParam('id'),
       EventValidator.validateEvent(),
       handleValidationErrors,
       this.handleRequest(this.controller.update),

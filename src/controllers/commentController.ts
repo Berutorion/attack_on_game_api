@@ -21,7 +21,7 @@ export const getComments = async (req: Request, res: Response) => {
     const contents = await Comment.find({ eventId: eventId });
     // check if comment exist
     if (!contents || contents.length == 0) {
-      return res.status(404).send({ message: 'Comments not found!' })
+      return res.status(404).send({ message: 'Comments not found!' });
     }
     // check if Event exist
     const eventExist = await EventModel.findOne({ idNumber: eventId });
@@ -29,13 +29,11 @@ export const getComments = async (req: Request, res: Response) => {
       return res.status(404).send({ message: 'Event not found!' });
     }
 
-    res
-      .status(200)
-      .send({
-        success: true,
-        message: '留言板資訊取得成功',
-        contents: contents,
-      });
+    res.status(200).send({
+      success: true,
+      message: '留言板資訊取得成功',
+      contents: contents,
+    });
   } catch (error) {
     res.status(500).send({ message: 'Error creating comment', error: error });
     console.log({ message: 'Error creating comment', error: error });

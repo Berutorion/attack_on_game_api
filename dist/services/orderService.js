@@ -14,36 +14,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderService = void 0;
 const lodash_1 = __importDefault(require("lodash"));
-const OrderStatus_1 = require("@/enums/OrderStatus");
-const orderDTO_1 = require("@/dto/orderDTO");
+const OrderRepository_1 = require("@/repositories/OrderRepository");
+const EventRepository_1 = require("@/repositories/EventRepository");
+const TicketRepository_1 = require("@/repositories/TicketRepository");
+const LookupService_1 = require("./LookupService");
 const eventDTO_1 = require("@/dto/eventDTO");
+const orderDTO_1 = require("@/dto/orderDTO");
+const orderListDTO_1 = require("@/dto/orderListDTO");
 const ticketDTO_1 = require("@/dto/ticketDTO");
-const orderRepository_1 = require("@/repositories/orderRepository");
-const eventRepository_1 = require("@/repositories/eventRepository");
-const ticketRepository_1 = require("@/repositories/ticketRepository");
+const CustomError_1 = require("@/errors/CustomError");
 const CustomResponseType_1 = require("@/enums/CustomResponseType");
 const OrderResponseType_1 = require("@/types/OrderResponseType");
 const EventResponseType_1 = require("@/types/EventResponseType");
 const TicketResponseType_1 = require("@/types/TicketResponseType");
-const CustomError_1 = require("@/errors/CustomError");
 const Player_1 = __importDefault(require("@/models/Player"));
+const OrderStatus_1 = require("@/enums/OrderStatus");
 const newEbPay_1 = require("@/utils/newEbPay");
 const dayjs_1 = __importDefault(require("dayjs"));
 class OrderService {
     constructor() {
-        this.orderRepository = new orderRepository_1.OrderRepository();
-        this.eventRepository = new eventRepository_1.EventRepository();
-        this.ticketRepository = new ticketRepository_1.TicketRepository();
+        this.orderRepository = new OrderRepository_1.OrderRepository();
+        this.eventRepository = new EventRepository_1.EventRepository();
+        this.ticketRepository = new TicketRepository_1.TicketRepository();
+        this.lookupService = new LookupService_1.LookupService(this.orderRepository, new EventRepository_1.EventRepository(), new TicketRepository_1.TicketRepository());
     }
     getById(queryParams) {
         return __awaiter(this, void 0, void 0, function* () {
-            const player = yield this.findPlayer(queryParams);
-            const order = yield this.findOrder(queryParams.params.orderId);
+            const player = yield this.lookupService.findPlayer(queryParams);
+            const order = yield this.lookupService.findOrder(queryParams.params.orderId);
+            if (order.playerId.toString() !== player.user.toString()) {
+                throw new CustomError_1.CustomError(CustomResponseType_1.CustomResponseType.VALIDATION_ERROR, OrderResponseType_1.OrderResponseType.FAILED_AUTHORIZATION);
+            }
             const eventId = order.eventId;
             if (!eventId) {
                 throw new CustomError_1.CustomError(CustomResponseType_1.CustomResponseType.VALIDATION_ERROR, OrderResponseType_1.OrderResponseType.FAILED_VALIDATION_EVENT_ID);
             }
-            const event = yield this.findEventByDbId(eventId);
+            const event = yield this.lookupService.findEventByDbId(eventId);
             const targetOrderDTO = new orderDTO_1.OrderDTO(order);
             const targetEventDTO = new eventDTO_1.EventDTO(event);
             if (targetOrderDTO.status === OrderStatus_1.Status.CANCEL) {
@@ -53,7 +59,7 @@ class OrderService {
                     tickets: [],
                 };
             }
-            const ticketList = yield this.findTickets(order.id, player.user);
+            const ticketList = yield this.lookupService.findTickets(order.id, player.user);
             const targetTicketsDTO = ticketList.map((ticket) => new ticketDTO_1.TicketDTO(ticket).toDetailDTO());
             return {
                 event: targetEventDTO.toSummaryDTO(),
@@ -66,12 +72,26 @@ class OrderService {
         return __awaiter(this, void 0, void 0, function* () {
             const player = yield this.findPlayer(queryParams);
             const { limit, status, skip } = queryParams.query;
-            const orderList = yield this.findOrderList(player.user, {
+            const orderList = yield this.lookupService.findOrderList(player.user, {
                 limit,
                 status,
                 skip,
             });
-            return orderList.map((x) => x.toDetailDTO());
+            const eventIds = orderList.map((x) => x.eventId);
+            const eventList = yield this.eventRepository.getEventsData({
+                _id: { $in: eventIds },
+            });
+            const result = orderList
+                .map((x) => {
+                const findEvent = eventList.find((y) => {
+                    return y._id.toString() == x.eventId.toString();
+                });
+                if (findEvent)
+                    return new orderListDTO_1.OrderListDTO(x, findEvent);
+                return undefined;
+            })
+                .filter((x) => x !== undefined);
+            return result;
         });
     }
     create(queryParams) {
@@ -210,4 +230,5 @@ class OrderService {
     }
 }
 exports.OrderService = OrderService;
+exports.default = OrderService;
 //# sourceMappingURL=orderService.js.map

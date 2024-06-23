@@ -6,7 +6,8 @@ export const OrderResponseType: IHTTPSMessage = {
   FAILED_VALIDATION: '驗證失敗，輸入數據不符合要求',
   FAILED_VALIDATION_EVENT_ID: '恩丟喔～活動的ID錯誤惹',
   FAILED_FOUND: '未找到訂單信息',
-  FAILED_AUTHORIZATION: '未授權操作，該活動已下架或用戶無權訪問',
+  FAILED_AUTHORIZATION:
+    '未授權操作，該活動已下架用戶無權訪問，或用戶本身非訂單本人',
   FAILED_CREATION: '訂單創建失敗，可能原因包括：訂單並不在活動報名期間內。',
   FAILED_UPDATE: '更新桌遊訂單失敗，請再試一次。',
   FAILED_DELETION: '刪除失敗，無法刪除訂單',

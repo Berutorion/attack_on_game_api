@@ -7,6 +7,7 @@ import { CustomError } from '@/errors/CustomError';
 import { IBaseRepository } from '@/repositories/IBaseRepository';
 import { OrderResponseType } from '@/types/OrderResponseType';
 import { MONGODB_ERROR_MSG } from '@/types/OtherResponseType';
+import { Types } from 'mongoose';
 import _ from 'lodash';
 export class OrderRepository implements IBaseRepository<OrderDocument> {
   async findById(id: string): Promise<OrderDocument | null> {
@@ -19,6 +20,17 @@ export class OrderRepository implements IBaseRepository<OrderDocument> {
         );
       }
       return order;
+    } catch (error: any) {
+      throw new CustomError(
+        CustomResponseType.DATABASE_OPERATION_FAILED,
+        `${MONGODB_ERROR_MSG}:${error.message || error}`,
+      );
+    }
+  }
+  async findAllBuyers(eventId: Types.ObjectId): Promise<OrderDocument[]> {
+    try {
+      const orders = await OrderModel.find({ eventId: eventId });
+      return orders;
     } catch (error: any) {
       throw new CustomError(
         CustomResponseType.DATABASE_OPERATION_FAILED,

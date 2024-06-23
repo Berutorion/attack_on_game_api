@@ -24,11 +24,15 @@ class OrderRouter extends BaseRouter {
     this.router.get(
       '/list',
       jwtAuthenticator,
+      OrderValidator.validateOrderQuery(),
+      handleValidationErrors,
       this.handleRequest(this.controller.getAll),
     );
     this.router.get(
       '/:orderId',
       jwtAuthenticator,
+      OrderValidator.validateOrdertId(),
+      handleValidationErrors,
       this.handleRequest(this.controller.getById),
     );
   }

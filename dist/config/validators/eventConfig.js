@@ -11,12 +11,6 @@ const isSameOrBefore_1 = __importDefault(require("dayjs/plugin/isSameOrBefore"))
 dayjs_1.default.extend(isSameOrBefore_1.default);
 const EventStatus_1 = require("@/enums/EventStatus");
 const EventRequest_1 = require("@/enums/EventRequest");
-const validateTime = (value, { path }) => {
-    if (!(0, dayjs_1.default)(value).isValid()) {
-        throw new Error(`${path}時間格式不對哦！必須是有效日期`);
-    }
-    return true;
-};
 const validateEventTimesOrder = (value, { req }) => {
     const { eventStartTime, eventEndTime, registrationStartTime, registrationEndTime, } = req.body;
     if ((0, dayjs_1.default)(registrationStartTime).isAfter((0, dayjs_1.default)(registrationEndTime))) {
@@ -30,19 +24,12 @@ const validateEventTimesOrder = (value, { req }) => {
     }
     return true;
 };
-const validateFutureDate = (value, { path }) => {
-    const now = (0, dayjs_1.default)();
-    if (now.isBefore((0, dayjs_1.default)(value))) {
-        return true;
-    }
-    throw new Error(`${path}時間格式不對哦！必須是未來的日期`);
-};
 exports.validationConfig = {
     body: {
         storeId: [
             (0, express_validator_1.body)('storeId')
                 .optional()
-                .custom(commonConfig_1.validateObjectIds)
+                .custom(commonConfig_1.isValidObjectId)
                 .withMessage('商店ID格式不對哦！'),
         ],
         title: [
@@ -63,28 +50,28 @@ exports.validationConfig = {
             (0, express_validator_1.body)('eventStartTime')
                 .notEmpty()
                 .withMessage('活動開始時間不能為空哦！')
-                .custom((value, { req, location, path }) => validateFutureDate(value, { req, location, path }))
-                .custom((value, { req, location, path }) => validateTime(value, { req, location, path })),
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isFutureDate)(value, { req, location, path }))
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isValidDateFormat)(value, { req, location, path })),
         ],
         eventEndTime: [
             (0, express_validator_1.body)('eventEndTime')
                 .notEmpty()
                 .withMessage('活動結束時間不能為空哦！')
-                .custom((value, { req, location, path }) => validateTime(value, { req, location, path }))
-                .custom((value, { req, location, path }) => validateFutureDate(value, { req, location, path })),
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isValidDateFormat)(value, { req, location, path }))
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isFutureDate)(value, { req, location, path })),
         ],
         registrationStartTime: [
             (0, express_validator_1.body)('registrationStartTime')
                 .notEmpty()
                 .withMessage('註冊開始時間不能為空哦！')
-                .custom((value, { req, location, path }) => validateTime(value, { req, location, path })),
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isValidDateFormat)(value, { req, location, path })),
         ],
         registrationEndTime: [
             (0, express_validator_1.body)('registrationEndTime')
                 .notEmpty()
                 .withMessage('註冊結束時間不能為空哦！')
-                .custom((value, { req, location, path }) => validateTime(value, { req, location, path }))
-                .custom((value, { req, location, path }) => validateFutureDate(value, { req, location, path }))
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isValidDateFormat)(value, { req, location, path }))
+                .custom((value, { req, location, path }) => (0, commonConfig_1.isFutureDate)(value, { req, location, path }))
                 .custom(validateEventTimesOrder),
         ],
         address: [
@@ -148,7 +135,7 @@ exports.validationConfig = {
         limit: [
             (0, express_validator_1.query)('limit')
                 .optional()
-                .isInt({ min: 1, max: Number(EventRequest_1.DefaultQuery.LIMIT) })
+                .isInt({ min: 1, max: Number(EventRequest_1.DefaultQuery.MAX_LIMIT) })
                 .toInt()
                 .withMessage('請輸入有效的最小參與人數！'),
         ],
@@ -189,12 +176,12 @@ exports.validationConfig = {
     param: {
         id: [
             (0, express_validator_1.param)('id')
-                .custom(commonConfig_1.validateNanoidIds)
+                .custom(commonConfig_1.isValidNanoid)
                 .withMessage('請提供有效的 6位數Id 格式'),
         ],
         storeId: [
             (0, express_validator_1.param)('storeId')
-                .custom(commonConfig_1.validateObjectIds)
+                .custom(commonConfig_1.isValidObjectId)
                 .withMessage('請提供有效的 ObjectId 格式'),
         ],
     },

@@ -9,6 +9,8 @@ import { CustomError } from '@/errors/CustomError';
 import { IBaseRepository } from '@/repositories/IBaseRepository';
 import { EventResponseType } from '@/types/EventResponseType';
 import { MONGODB_ERROR_MSG } from '@/types/OtherResponseType';
+import { DefaultQuery } from '@/enums/EventRequest';
+import mongoose from 'mongoose';
 import _ from 'lodash';
 export class EventRepository implements IBaseRepository<EventDocument> {
   async findById(id: string): Promise<EventDocument> {
@@ -45,6 +47,16 @@ export class EventRepository implements IBaseRepository<EventDocument> {
       );
     }
   }
+  public async getEventsByAprilStoreId(
+    storeId: mongoose.Schema.Types.ObjectId,
+    query = {},
+  ): Promise<EventDocument[]> {
+    const eventData = await EventModel.find({
+      storeId: new Types.ObjectId(storeId.toString()),
+      ...query,
+    });
+    return eventData || [];
+  }
   async findAll(queryParams: QueryParams): Promise<EventDocument[]> {
     try {
       const {
@@ -65,7 +77,7 @@ export class EventRepository implements IBaseRepository<EventDocument> {
         },
       );
       const query = eventQuery.buildEventQuery();
-      const events = await this._getEventsData(
+      const events = await this.getEventsData(
         query,
         skip,
         limit,
@@ -180,7 +192,7 @@ export class EventRepository implements IBaseRepository<EventDocument> {
         },
       );
       const query = eventQuery.buildEventQuery();
-      const events = await this._getEventsData(
+      const events = await this.getEventsData(
         query,
         skip,
         limit,
@@ -196,12 +208,12 @@ export class EventRepository implements IBaseRepository<EventDocument> {
     }
   }
 
-  private async _getEventsData(
+  public async getEventsData(
     eventQuery: any,
-    skip: number,
-    limit: number,
-    sortBy: string,
-    sortOrder: SortOrder,
+    skip: number = DefaultQuery.SKIP,
+    limit: number = DefaultQuery.LIMIT,
+    sortBy: string = DefaultQuery.SORT_BY,
+    sortOrder: SortOrder = DefaultQuery.SORT_ORDER,
   ): Promise<EventDocument[]> {
     try {
       const sortOptions: { [key: string]: SortOrder } = { [sortBy]: sortOrder };

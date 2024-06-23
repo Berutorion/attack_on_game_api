@@ -10,19 +10,19 @@ import TIME_FORMATTER from '@/const/TIME_FORMATTER';
 import { generateCustomNanoId } from '@/utils/generateCustomNanoId';
 export class EventDTO extends BaseDTO {
   private readonly _storeId!: Types.ObjectId;
-  private readonly _title!: string;
   private readonly _address!: string;
   private readonly _isFoodAllowed: boolean;
   private readonly _description: string;
+  private readonly _title!: string;
   private readonly _eventStartTime!: string;
   private readonly _eventEndTime!: string;
+  private readonly _eventImageUrl!: string[];
   private readonly _registrationStartTime!: string;
   private readonly _registrationEndTime!: string;
   private readonly _maxParticipants!: number;
   private readonly _minParticipants!: number;
   private readonly _currentParticipantsCount!: number;
   private readonly _participationFee!: number;
-  private readonly _eventImageUrl!: string[];
   private readonly _isPublish!: boolean;
   constructor(dto: Partial<EventDocument>) {
     const dtoWithId = {
