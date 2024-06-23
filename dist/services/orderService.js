@@ -27,6 +27,8 @@ const EventResponseType_1 = require("@/types/EventResponseType");
 const TicketResponseType_1 = require("@/types/TicketResponseType");
 const CustomError_1 = require("@/errors/CustomError");
 const Player_1 = __importDefault(require("@/models/Player"));
+const newEbPay_1 = require("@/utils/newEbPay");
+const dayjs_1 = __importDefault(require("dayjs"));
 class OrderService {
     constructor() {
         this.orderRepository = new orderRepository_1.OrderRepository();
@@ -80,8 +82,30 @@ class OrderService {
             this.validateOrder(targetEvent, targetOrderDTO);
             const OrderDocument = yield this.createOrder(targetOrderDTO);
             yield this.updateEventParticipants(targetEvent, targetOrderDTO);
-            yield this.createTickets(OrderDocument.id, player.user, targetOrderDTO.registrationCount);
-            return true;
+            try {
+                const aesEncrypt = (0, newEbPay_1.createSesEncrypt)({
+                    MerchantOrderNo: OrderDocument.idNumber,
+                    TimeStamp: (0, dayjs_1.default)(OrderDocument.createdAt).unix(),
+                    Amt: OrderDocument.payment,
+                    ItemDesc: targetEvent.title,
+                });
+                const shaEncrypt = (0, newEbPay_1.createShaEncrypt)(aesEncrypt);
+                console.log(aesEncrypt, shaEncrypt);
+                return {
+                    MerchantID: process.env.MerchantID,
+                    TradeInfo: aesEncrypt,
+                    TradeSha: shaEncrypt,
+                    Version: process.env.Version,
+                };
+            }
+            catch (error) {
+                console.log(error);
+            }
+            // await this.createTickets(
+            //   OrderDocument.id,
+            //   player.user,
+            //   targetOrderDTO.registrationCount,
+            // );
         });
     }
     findPlayer(queryParams) {

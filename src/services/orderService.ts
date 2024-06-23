@@ -19,6 +19,8 @@ import { CustomError } from '@/errors/CustomError';
 import { Request } from 'express';
 import Player from '@/models/Player';
 import { Types } from 'mongoose';
+import { createSesEncrypt, createShaEncrypt } from '@/utils/newEbPay';
+import dayjs from 'dayjs';
 interface IGetByIdResult {
   event: Partial<EventDocument>;
   order: Partial<OrderDocument>;
@@ -78,7 +80,12 @@ export class OrderService {
     });
     return orderList.map((x) => x.toDetailDTO());
   }
-  async create(queryParams: Request): Promise<boolean> {
+  async create(queryParams: Request): Promise<{
+    MerchantID: string | undefined;
+    TradeInfo: string;
+    TradeSha: string;
+    Version: string | undefined;
+  } | undefined> {
     const player = await this.findPlayer(queryParams);
     const targetEvent = await this.findEventById(queryParams.body.eventId);
     const targetOrderDTO = this.createOrderDTO(
@@ -92,13 +99,35 @@ export class OrderService {
     const OrderDocument = await this.createOrder(targetOrderDTO);
     await this.updateEventParticipants(targetEvent, targetOrderDTO);
 
-    await this.createTickets(
-      OrderDocument.id,
-      player.user,
-      targetOrderDTO.registrationCount,
-    );
+    try {
+      const aesEncrypt = createSesEncrypt({
+        MerchantOrderNo: OrderDocument.idNumber,
+        TimeStamp: dayjs(OrderDocument.createdAt).unix(),
+        Amt: OrderDocument.payment,
+        ItemDesc: targetEvent.title!,
 
-    return true;
+      });
+      const shaEncrypt = createShaEncrypt(aesEncrypt);
+
+      console.log(aesEncrypt, shaEncrypt);
+      return {
+        MerchantID: process.env.MerchantID!,
+        TradeInfo: aesEncrypt,
+        TradeSha: shaEncrypt,
+        Version: process.env.Version!,
+      };
+    } catch (error) {
+      console.log(error);
+    }
+
+
+    // await this.createTickets(
+    //   OrderDocument.id,
+    //   player.user,
+    //   targetOrderDTO.registrationCount,
+    // );
+
+
   }
   private async findPlayer(queryParams: Request): Promise<PlayerDocument> {
     const player = await Player.findOne({ user: queryParams.user });
